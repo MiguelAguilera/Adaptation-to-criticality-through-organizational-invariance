@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+from ising import ising
+import numpy as np
+from sys import argv
+
+if len(argv) < 3:
+    print("Usage: " + argv[0] + " <size> + <bind>")
+    exit(1)
+
+size=int(argv[1])
+bind=int(argv[2])
+
+
+sizes=2**np.arange(2,7)
+R=10
+mode='MonteCarlo'
+
+Nbetas=101
+betas=10**np.linspace(-1,1,Nbetas)
+C=np.zeros(R)
+
+for rep in range(R):
+	filename='files/mode_'+mode+'-size_'+str(size)+'-ind_'+str(rep)+'.npz'
+	filename='parameters.npz'
+	data=np.load(filename)
+	I=ising(size)
+	I.h=data['h'][()][(size,rep)]
+	I.J=data['J'][()][(size,rep)]
+				
+	Em=0
+	E2m=0
+	T=100000
+
+	print(rep)
+	I.Beta=betas[bind]
+	I.randomize_state()
+	for t in range(int(T/10)):
+		I.SequentialGlauberStep()
+
+	for t in range(T):
+		I.SequentialGlauberStep()
+		E=-(np.dot(I.s,I.h) + np.dot(np.dot(I.s,I.J),I.s))
+		Em+=E/float(T)
+		E2m+=E**2/float(T)
+	C[rep]=I.Beta**2*(E2m-Em**2)/size
+
+print(C)
+filename='C/C-size_'+str(size)+'-Nbetas_'+str(Nbetas)+'-bind_'+str(bind)+'.npy'
+np.save(filename,C)
+
+
