@@ -15,6 +15,7 @@ __author__ = "Christoph Dann <cdann@cdann.de>"
 # SOURCE:
 # https://github.com/rlpy/rlpy/blob/master/rlpy/Domains/Acrobot.py
 
+
 class AcrobotEnv(core.Env):
 
     """
@@ -54,7 +55,7 @@ class AcrobotEnv(core.Env):
 
     metadata = {
         'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second' : 15
+        'video.frames_per_second': 15
     }
 
     dt = .2
@@ -103,7 +104,8 @@ class AcrobotEnv(core.Env):
 
         # Add noise to the force action
         if self.torque_noise_max > 0:
-            torque += self.np_random.uniform(-self.torque_noise_max, self.torque_noise_max)
+            torque += self.np_random.uniform(-self.torque_noise_max,
+                                             self.torque_noise_max)
 
         # Now, augment the state with our force action so it can be passed to
         # _dsdt
@@ -129,7 +131,8 @@ class AcrobotEnv(core.Env):
 
     def _get_ob(self):
         s = self.state
-        return np.array([cos(s[0]), np.sin(s[0]), cos(s[1]), sin(s[1]), s[2], s[3]])
+        return np.array(
+            [cos(s[0]), np.sin(s[0]), cos(s[1]), sin(s[1]), s[2], s[3]])
 
     def _terminal(self):
         s = self.state
@@ -165,8 +168,8 @@ class AcrobotEnv(core.Env):
         else:
             # the following line is consistent with the java implementation and the
             # book
-            ddtheta2 = (a + d2 / d1 * phi1 - m2 * l1 * lc2 * dtheta1 ** 2 * np.sin(theta2) - phi2) \
-                / (m2 * lc2 ** 2 + I2 - d2 ** 2 / d1)
+            ddtheta2 = (a + d2 / d1 * phi1 - m2 * l1 * lc2 * dtheta1 ** 2 *
+                        np.sin(theta2) - phi2) / (m2 * lc2 ** 2 + I2 - d2 ** 2 / d1)
         ddtheta1 = -(d2 * ddtheta2 + phi1) / d1
         return (dtheta1, dtheta2, ddtheta1, ddtheta2, 0.)
 
@@ -181,10 +184,11 @@ class AcrobotEnv(core.Env):
         s = self.state
 
         if self.viewer is None:
-            self.viewer = rendering.Viewer(500,500)
-            self.viewer.set_bounds(-2.2,2.2,-2.2,2.2)
+            self.viewer = rendering.Viewer(500, 500)
+            self.viewer.set_bounds(-2.2, 2.2, -2.2, 2.2)
 
-        if s is None: return None
+        if s is None:
+            return None
 
         p1 = [-self.LINK_LENGTH_1 *
               np.cos(s[0]), self.LINK_LENGTH_1 * np.sin(s[0])]
@@ -192,21 +196,22 @@ class AcrobotEnv(core.Env):
         p2 = [p1[0] - self.LINK_LENGTH_2 * np.cos(s[0] + s[1]),
               p1[1] + self.LINK_LENGTH_2 * np.sin(s[0] + s[1])]
 
-        xys = np.array([[0,0], p1, p2])[:,::-1]
-        thetas = [s[0]-np.pi/2, s[0]+s[1]-np.pi/2]
+        xys = np.array([[0, 0], p1, p2])[:, ::-1]
+        thetas = [s[0] - np.pi / 2, s[0] + s[1] - np.pi / 2]
 
         self.viewer.draw_line((-2.2, 1), (2.2, 1))
-        for ((x,y),th) in zip(xys, thetas):
-            l,r,t,b = 0, 1, .1, -.1
-            jtransform = rendering.Transform(rotation=th, translation=(x,y))
-            link = self.viewer.draw_polygon([(l,b), (l,t), (r,t), (r,b)])
+        for ((x, y), th) in zip(xys, thetas):
+            l, r, t, b = 0, 1, .1, -.1
+            jtransform = rendering.Transform(rotation=th, translation=(x, y))
+            link = self.viewer.draw_polygon([(l, b), (l, t), (r, t), (r, b)])
             link.add_attr(jtransform)
-            link.set_color(0,.8, .8)
+            link.set_color(0, .8, .8)
             circ = self.viewer.draw_circle(.1)
             circ.set_color(.8, .8, 0)
             circ.add_attr(jtransform)
 
-        return self.viewer.render(return_rgb_array = mode=='rgb_array')
+        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+
 
 def wrap(x, m, M):
     """
@@ -223,6 +228,7 @@ def wrap(x, m, M):
     while x < m:
         x = x + diff
     return x
+
 
 def bound(x, m, M=None):
     """

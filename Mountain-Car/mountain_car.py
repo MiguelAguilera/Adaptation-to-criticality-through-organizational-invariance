@@ -8,6 +8,7 @@ from gym import spaces
 from gym.utils import seeding
 import numpy as np
 
+
 class MountainCarEnv(gym.Env):
 	metadata = {
 		'render.modes': ['human', 'rgb_array'],
@@ -36,10 +37,11 @@ class MountainCarEnv(gym.Env):
 		return [seed]
 
 	def _step(self, action):
-		assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
+		assert self.action_space.contains(
+			action), "%r (%s) invalid" % (action, type(action))
 
 		position, velocity = self.state
-		velocity += (action-1)*0.001 + math.cos(3*position)*(-0.0025)
+		velocity += (action - 1) * 0.001 + math.cos(3 * position) * (-0.0025)
 #		velocity_prev=velocity
 		velocity = np.clip(velocity, -self.max_speed, self.max_speed)
 #		self.Ed=velocity_prev**2-velocity**2
@@ -54,13 +56,14 @@ class MountainCarEnv(gym.Env):
 		return np.array(self.state), reward, done, {}
 
 	def _reset(self):
-#		self.state = np.array([self.np_random.uniform(low=-0.6, high=-0.4), 0])
-		middle=(self.min_position+self.max_position)/2
-		self.state = np.array([middle + self.np_random.uniform(low=-0.1, high=0.1), 0])
+		#		self.state = np.array([self.np_random.uniform(low=-0.6, high=-0.4), 0])
+		middle = (self.min_position + self.max_position) / 2
+		self.state = np.array(
+			[middle + self.np_random.uniform(low=-0.1, high=0.1), 0])
 		return np.array(self.state)
 
 	def _height(self, xs):
-		return np.sin(3 * xs)*.45+.55
+		return np.sin(3 * xs) * .45 + .55
 
 	def _render(self, mode='human', close=False):
 		if close:
@@ -73,17 +76,16 @@ class MountainCarEnv(gym.Env):
 		screen_height = 400
 
 		world_width = self.max_position - self.min_position
-		scale = screen_width/world_width
-		carwidth=40
-		carheight=20
-
+		scale = screen_width / world_width
+		carwidth = 40
+		carheight = 20
 
 		if self.viewer is None:
 			from gym.envs.classic_control import rendering
 			self.viewer = rendering.Viewer(screen_width, screen_height)
 			xs = np.linspace(self.min_position, self.max_position, 100)
 			ys = self._height(xs)
-			xys = list(zip((xs-self.min_position)*scale, ys*scale))
+			xys = list(zip((xs - self.min_position) * scale, ys * scale))
 
 			self.track = rendering.make_polyline(xys)
 			self.track.set_linewidth(4)
@@ -91,19 +93,24 @@ class MountainCarEnv(gym.Env):
 
 			clearance = 10
 
-			l,r,t,b = -carwidth/2, carwidth/2, carheight, 0
-			car = rendering.FilledPolygon([(l,b), (l,t), (r,t), (r,b)])
+			l, r, t, b = -carwidth / 2, carwidth / 2, carheight, 0
+			car = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
 			car.add_attr(rendering.Transform(translation=(0, clearance)))
 			self.cartrans = rendering.Transform()
 			car.add_attr(self.cartrans)
 			self.viewer.add_geom(car)
-			frontwheel = rendering.make_circle(carheight/2.5)
+			frontwheel = rendering.make_circle(carheight / 2.5)
 			frontwheel.set_color(.5, .5, .5)
-			frontwheel.add_attr(rendering.Transform(translation=(carwidth/4,clearance)))
+			frontwheel.add_attr(
+                            rendering.Transform(
+                                translation=(
+                                    carwidth / 4,
+                                    clearance)))
 			frontwheel.add_attr(self.cartrans)
 			self.viewer.add_geom(frontwheel)
-			backwheel = rendering.make_circle(carheight/2.5)
-			backwheel.add_attr(rendering.Transform(translation=(-carwidth/4,clearance)))
+			backwheel = rendering.make_circle(carheight / 2.5)
+			backwheel.add_attr(rendering.Transform(
+				translation=(-carwidth / 4, clearance)))
 			backwheel.add_attr(self.cartrans)
 			backwheel.set_color(.5, .5, .5)
 			self.viewer.add_geom(backwheel)
@@ -117,8 +124,9 @@ class MountainCarEnv(gym.Env):
 #			self.viewer.add_geom(flag)
 
 		pos = self.state[0]
-		self.cartrans.set_translation((pos-self.min_position)*scale, self._height(pos)*scale)
+		self.cartrans.set_translation(
+                    (pos - self.min_position) * scale,
+                    self._height(pos) * scale)
 		self.cartrans.set_rotation(math.cos(3 * pos))
 
-		return self.viewer.render(return_rgb_array = mode=='rgb_array')
-
+		return self.viewer.render(return_rgb_array=mode == 'rgb_array')

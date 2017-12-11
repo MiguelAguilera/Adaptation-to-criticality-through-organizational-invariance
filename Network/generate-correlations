@@ -5,44 +5,46 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-L=20
-size=L**2
+L = 20
+size = L**2
 
 plt.rc('text', usetex=True)
-font = {'family':'serif','size':15, 'serif': ['computer modern roman']}
-plt.rc('font',**font)
-plt.rc('legend',**{'fontsize':16})
+font = {'family': 'serif', 'size': 15, 'serif': ['computer modern roman']}
+plt.rc('font', **font)
+plt.rc('legend', **{'fontsize': 16})
 
 
-I=ising(size)
+I = ising(size)
 plt.figure()
 for i in range(size):
-	indx=i%L
-	indy=int(np.floor(i/L))
-	for j in range(i+1,size):
-		indx1=j%L
-		indy1=int(np.floor(j/L))
-		if np.abs((indx-indx1+1)%L-1)+np.abs((indy-indy1+1)%L-1) == 1:
-			I.J[i,j]=1/(2/np.log(1+np.sqrt(2)))# 1/2.26918531421
+	indx = i % L
+	indy = int(np.floor(i / L))
+	for j in range(i + 1, size):
+		indx1 = j % L
+		indy1 = int(np.floor(j / L))
+		if np.abs((indx - indx1 + 1) %
+                    L - 1) + np.abs((indy - indy1 + 1) %
+                                    L - 1) == 1:
+			I.J[i, j] = 1 / (2 / np.log(1 + np.sqrt(2)))  # 1/2.26918531421
 
 I.observablesMC(1000000)
 
 plt.figure()
-plt.imshow(I.c,interpolation='nearest')
+plt.imshow(I.c, interpolation='nearest')
 plt.colorbar()
 
-ind=np.triu_indices(size,1)
+ind = np.triu_indices(size, 1)
 
 plt.figure()
 plt.hist(I.m)
 
 plt.figure()
-plt.hist(I.c[ind],20,color='gray',normed=True)
-plt.ylabel(r'$P(c_{ij})$',fontsize=18, rotation=0, labelpad=25)
-plt.xlabel(r'$c_{ij}$',fontsize=18)
+plt.hist(I.c[ind], 20, color='gray', normed=True)
+plt.ylabel(r'$P(c_{ij})$', fontsize=18, rotation=0, labelpad=25)
+plt.xlabel(r'$c_{ij}$', fontsize=18)
 
-filename='correlations-ising2D-size'+str(size)+'.npy'
-np.save(filename,I.C[ind])
+filename = 'correlations-ising2D-size' + str(size) + '.npy'
+np.save(filename, I.C[ind])
 
 
 plt.show()

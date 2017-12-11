@@ -5,70 +5,68 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-filename='correlations-ising2D-size400.npy'
-Cdist=np.load(filename)
-mode='MonteCarlo'
+filename = 'correlations-ising2D-size400.npy'
+Cdist = np.load(filename)
+mode = 'MonteCarlo'
 
-sizes=2**np.arange(2,7)
+sizes = 2**np.arange(2, 7)
 
 
 for size in sizes:
-	for rep in range(0,10):
-		iu1=np.triu_indices(size,1)
-		
-		
-		Cint=np.zeros((size,size-1))
+	for rep in range(0, 10):
+		iu1 = np.triu_indices(size, 1)
+
+		Cint = np.zeros((size, size - 1))
 		for i in range(size):
-			C=[]
-			for j in range(size-1):
-				ind=np.random.randint(len(Cdist))
-				C+=[Cdist[ind]]
-			Cint[i,:]=-np.sort(-np.array(C))
-		
-		m1=np.zeros(size)
-		
-		if mode=='exact':
-			I=ising(size)
-			I.inverse_exact(m1,C1,1E-5)
-			h=I.h.copy()
-			J=I.J.copy()
-			
-		if mode=='MonteCarlo':
-			I=ising(size)
+			C = []
+			for j in range(size - 1):
+				ind = np.random.randint(len(Cdist))
+				C += [Cdist[ind]]
+			Cint[i, :] = -np.sort(-np.array(C))
+
+		m1 = np.zeros(size)
+
+		if mode == 'exact':
+			I = ising(size)
+			I.inverse_exact(m1, C1, 1E-5)
+			h = I.h.copy()
+			J = I.J.copy()
+
+		if mode == 'MonteCarlo':
+			I = ising(size)
 			I.independent_model(m1)
-		
-			u=0.01
-			T=1000*size
-			Iterations=1000
-			
+
+			u = 0.01
+			T = 1000 * size
+			Iterations = 1000
+
 			for step in range(Iterations):
 				I.observablesMC(T)
-				
-				c1=np.zeros((size,size))
-				for i in range(size):
-					inds=np.array([],int)
-					c=np.array([])
-					for j in range(size):
-						if not i==j:
-							inds=np.append(inds,[j])
-						if i<j:
-							c=np.append(c,[I.c[i,j]])
-						elif i>j:
-							c=np.append(c,[I.c[j,i]])
-					order=np.argsort(c)[::-1]
-					c1[i,inds[order]]=Cint[i,:]
-				c1=np.triu(0.5*(c1+c1.T),1)
-				
-				
-				I.h+=u*(m1-I.m)
-				I.J+=u*(c1-I.c)
-				fit = max(np.max(np.abs(I.m-m1)),np.max(np.abs(I.c[iu1]-c1[iu1])))
-				fit1 = np.mean([np.mean(np.abs(I.m-m1)),np.mean(np.abs(I.c[iu1]-c1[iu1]))])
-				print(size,rep,step,fit,fit1,np.max(np.abs(I.J)))
-			h=I.h.copy()
-			J=I.J.copy()
-			
-		filename='files/mode_'+mode+'-size_'+str(size)+'-ind_'+str(rep)+'.npz'
-		np.savez(filename, J=J, h=h)
-		
 
+				c1 = np.zeros((size, size))
+				for i in range(size):
+					inds = np.array([], int)
+					c = np.array([])
+					for j in range(size):
+						if not i == j:
+							inds = np.append(inds, [j])
+						if i < j:
+							c = np.append(c, [I.c[i, j]])
+						elif i > j:
+							c = np.append(c, [I.c[j, i]])
+					order = np.argsort(c)[::-1]
+					c1[i, inds[order]] = Cint[i, :]
+				c1 = np.triu(0.5 * (c1 + c1.T), 1)
+
+				I.h += u * (m1 - I.m)
+				I.J += u * (c1 - I.c)
+				fit = max(np.max(np.abs(I.m - m1)), np.max(np.abs(I.c[iu1] - c1[iu1])))
+				fit1 = np.mean([np.mean(np.abs(I.m - m1)),
+                                    np.mean(np.abs(I.c[iu1] - c1[iu1]))])
+				print(size, rep, step, fit, fit1, np.max(np.abs(I.J)))
+			h = I.h.copy()
+			J = I.J.copy()
+
+		filename = 'files/mode_' + mode + '-size_' + \
+			str(size) + '-ind_' + str(rep) + '.npz'
+		np.savez(filename, J=J, h=h)
