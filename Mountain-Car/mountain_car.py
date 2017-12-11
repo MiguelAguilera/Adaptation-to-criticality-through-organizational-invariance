@@ -42,9 +42,7 @@ class MountainCarEnv(gym.Env):
 
 		position, velocity = self.state
 		velocity += (action - 1) * 0.001 + math.cos(3 * position) * (-0.0025)
-#		velocity_prev=velocity
 		velocity = np.clip(velocity, -self.max_speed, self.max_speed)
-#		self.Ed=velocity_prev**2-velocity**2
 		position += velocity
 		position = np.clip(position, self.min_position, self.max_position)
 #		if (position==self.min_position and velocity<0): velocity = 0
