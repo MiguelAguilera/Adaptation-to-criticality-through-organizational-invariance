@@ -33,7 +33,6 @@ class ising:
 		self.minacc = -5
 		self.maxheight = 2
 		self.minheight = -2
-		self.Ssize1 = int(np.floor(self.Ssize / 2))
 
 		self.Update(0)
 
@@ -44,10 +43,12 @@ class ising:
 			return self.s[-self.Msize:]
 		elif mode == 'sensors':
 			return self.s[0:self.Ssize]
-		elif mode == 'hidden':
-			return self.s[self.Ssize:-self.Msize]
+		elif mode == 'input':
+			return self.sensors
 		elif mode == 'non-sensors':
 			return self.s[self.Ssize:]
+		elif mode == 'hidden':
+			return self.s[self.Ssize:-self.Msize]
 
 	def get_state_index(self, mode='all'):
 		return bool2int(0.5 * (self.get_state(mode) + 1))
@@ -55,10 +56,11 @@ class ising:
 	def set_mass(self, mass=1):
 		self.env.LINK_MASS_1 = mass
 		self.env.LINK_MASS_2 = mass
-	# Randomize the state of the network
 
+	# Randomize the state of the network
 	def randomize_state(self):
 		self.s = np.random.randint(0, 2, self.size) * 2 - 1
+		self.sensors = np.random.randint(0, 2, self.Ssize) * 2 - 1
 
 	def randomize_position(self):
 		self.observation = self.env.reset()
@@ -77,7 +79,7 @@ class ising:
 			max_weights = self.max_weights
 		for i in range(self.size):
 			for j in np.arange(i + 1, self.size):
-				if i < j and (i >= self.Ssize or j >= self.Ssize):
+				if (i >= self.Ssize or j >= self.Ssize):
 					self.J[i, j] = (np.random.rand(1) * 2 - 1) * self.max_weights
 
 	def Move(self):
@@ -89,7 +91,8 @@ class ising:
 		self.theta1_dot2 = self.theta1_dot - theta1_dot_p
 
 	def SensorIndex(self, x, xmax):
-		return int(np.floor((x + xmax) / (2 * xmax) * 2**self.Ssize1))
+		return int(np.floor((x * (1 - 10 * np.finfo(float).eps) +
+                       xmax) / (2 * xmax) * 2**self.Ssize))
 
 	def UpdateSensors(self):
 		self.acc = self.theta1_dot2
@@ -103,44 +106,50 @@ class ising:
 		self.xpos = np.sin(s[0]) + np.sin(s[1] + s[0])
 
 		self.speed = self.env.state[2]
+		self.speedx = self.speed * np.cos(s[0])
+		self.speedy = self.speed * np.sin(s[0])
+
+		self.speed2 = self.env.state[3]
+
+		self.posx0_ind = self.SensorIndex(self.xpos, self.maxheight / 2)
+		self.posy0_ind = self.SensorIndex(self.ypos, self.maxheight / 2)
 
 		self.posx_ind = self.SensorIndex(self.xpos, self.maxheight)
 		self.posy_ind = self.SensorIndex(self.ypos, self.maxheight)
 
-		self.s[self.Ssize1:self.Ssize] = 2 * \
-			bitfield(self.posx_ind, self.Ssize - self.Ssize1) - 1
-		self.s[0:self.Ssize1] = 2 * bitfield(self.posy_ind, self.Ssize1) - 1
+		self.speed_ind = self.SensorIndex(self.speed, self.maxspeed)
+
+		self.sensors[0:self.Ssize] = 2 * bitfield(self.speed_ind, self.Ssize) - 1
 
 	# Execute step of the Glauber algorithm to update the state of one unit
 	def GlauberStep(self, i=None):  # Execute step of Glauber algorithm
 		if i is None:
 			i = np.random.randint(self.size)
-		eDiff = 2 * self.s[i] * \
-			(self.h[i] + np.dot(self.J[i, :] + self.J[:, i], self.s))
-		if self.Beta * eDiff < np.log(1.0 / np.random.rand(1) - 1):    # Glauber
-			self.s[i] = -self.s[i]
 
-	# Compute energy difference between two states with a flip of spin i
-	def deltaE(self, i):
-		return 2 * (self.s[i] * self.h[i] + np.sum(self.s[i] *
-                                             (self.J[i, :] * self.s) + self.s[i] * (self.J[:, i] * self.s)))
+		I = 0
+		if i < self.Ssize:
+			I = self.sensors[i]
+		eDiff = 2 * self.s[i] * (self.h[i] + I +
+		                         np.dot(self.J[i, :] + self.J[:, i], self.s))
+		if eDiff * self.Beta < np.log(1 / np.random.rand() - 1):    # Glauber
+			self.s[i] = -self.s[i]
 
 	# Update states of the agent from its sensors
 	def Update(self, i=None):
 		if i is None:
-			i = np.random.randint(self.size)
-		if i == 0:
+			i = np.random.randint(-1, self.size)
+		if i == -1:
 			self.Move()
 			self.UpdateSensors()
-		elif i >= self.Ssize:
+		else:
 			self.GlauberStep(i)
 
 	def SequentialUpdate(self):
-		for i in np.random.permutation(self.size):
+		for i in np.random.permutation(range(-1, self.size)):
 			self.Update(i)
 
 	# Dynamical Critical Learning Algorithm for poising units in a critical state
-	def HomeostaticGradient(self, T=None):
+	def HomeostaticCorrelations(self, T=None):
 		if T is None:
 			T = self.defaultT
 
@@ -164,7 +173,7 @@ class ising:
 			self.C[i, i + 1:] = self.c[i, i + 1:] - self.m[i] * self.m[i + 1:]
 
 		c1 = np.zeros((self.size, self.size))
-		for i in range(self.Ssize, self.size):
+		for i in range(self.size):
 			inds = np.array([], int)
 			c = np.array([])
 			for j in range(self.size):
@@ -177,35 +186,35 @@ class ising:
 			order = np.argsort(c)[::-1]
 			c1[i, inds[order]] = self.Cint[i, :]
 		self.c1 = np.triu(c1 + c1.T, 1)
-		self.c1[self.Ssize:, self.Ssize:] *= 0.5
+		self.c1 *= 0.5
 
+		self.m[0:self.Ssize] = 0
+		self.m1[0:self.Ssize] = 0
+		self.c[0:self.Ssize, 0:self.Ssize] = 0
+		self.c[-self.Msize:, -self.Msize:] = 0
+		self.c[0:self.Ssize, -self.Msize:] = 0
+		self.c1[0:self.Ssize, 0:self.Ssize] = 0
+		self.c1[-self.Msize:, -self.Msize:] = 0
+		self.c1[0:self.Ssize, -self.Msize:] = 0
 		dh = self.m1 - self.m
 		dJ = self.c1 - self.c
-
-		dh[0:self.Ssize] = 0
-		dJ[0:self.Ssize, 0:self.Ssize] = 0
-		dJ[-self.Msize:, -self.Msize:] = 0
-		dJ[0:self.Ssize, -self.Msize:] = 0
 		return dh, dJ
 
 	def CriticalLearning(self, Iterations, T=None, mode='homeostatic'):
 		u = 0.01
 		count = 0
-		if mode == 'static':
-			dh, dJ = self.CriticalGradient(T)
-		if mode == 'dynamic':
-			dh, dJ = self.DynamicalCriticalGradient(T)
-		if mode == 'homeostatic':
-			dh, dJ = self.HomeostaticGradient(T)
+		dh, dJ = self.HomeostaticCorrelations(T)
 		fit = max(np.max(np.abs(self.c1 - self.c)), np.max(np.abs(self.m1 - self.m)))
 		print(count, fit, self.env.LINK_MASS_1, np.max(np.abs(self.J)), np.mean(
 			np.abs(self.J[0:self.Ssize, self.Ssize:])), np.mean(self.y), np.max(self.y))
-		self.l2 = 0.004
-		for i in range(Iterations):
+		for it in range(Iterations):
 			count += 1
-			self.h += u * dh - self.l2 * self.h
-			self.J += u * dJ - self.l2 * self.J
+			self.h += u * dh
+			self.J += u * dJ
 
+			if it % 10 == 0:
+				self.randomize_state()
+				self.randomize_position()
 			Vmax = self.max_weights
 			for i in range(self.size):
 				if np.abs(self.h[i]) > Vmax:
@@ -214,22 +223,14 @@ class ising:
 					if np.abs(self.J[i, j]) > Vmax:
 						self.J[i, j] = Vmax * np.sign(self.J[i, j])
 
-			if mode == 'static':
-				dh, dJ = self.CriticalGradient(T)
-			if mode == 'dynamic':
-				dh, dJ = self.DynamicalCriticalGradient(T)
-			if mode == 'homeostatic':
-				dh, dJ = self.HomeostaticGradient(T)
+			dh, dJ = self.HomeostaticCorrelations(T)
 			fit = np.max(
 				np.abs(self.c1[self.Ssize:, self.Ssize:] - self.c[self.Ssize:, self.Ssize:]))
 
 			if count % 1 == 0:
-				print(
-                                    self.size, count, fit, self.env.LINK_MASS_1, np.max(
-                                        np.abs(
-                                            self.J)), np.mean(
-                                        self.y), np.max(
-					self.y))
+				print(              self.size, count, fit, self.env.LINK_MASS_1, 
+                                    np.mean(np.abs(self.J)), np.max(np.abs(self.J)), 
+                                    np.mean(self.y), np.max(self.y))
 
 
 # Transform bool array into positive integer
