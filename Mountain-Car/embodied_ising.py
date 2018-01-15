@@ -140,7 +140,7 @@ class ising:
 			self.Update(i)
 
 	# Critical Learning Algorithm for poising units in a critical state
-	def HomeostaticCorrelations(self, T=None):
+	def AdjustCorrelations(self, T=None):
 		if T is None:
 			T = self.defaultT
 
@@ -195,7 +195,7 @@ class ising:
 	def CriticalLearning(self, Iterations, T=None):
 		u = 0.01
 		count = 0
-		dh, dJ = self.HomeostaticCorrelations(T)
+		dh, dJ = self.AdjustCorrelations(T)
 		fit = max(np.max(np.abs(self.c1 - self.c)), np.max(np.abs(self.m1 - self.m)))
 		x_min = np.min(self.x)
 		x_max = np.max(self.x)
@@ -218,7 +218,7 @@ class ising:
 					if np.abs(self.J[i, j]) > Vmax:
 						self.J[i, j] = Vmax * np.sign(self.J[i, j])
 
-			dh, dJ = self.HomeostaticCorrelations(T)
+			dh, dJ = self.AdjustCorrelations(T)
 			fit = np.max(np.abs(self.c1 - self.c))
 			if count % 1 == 0:
 				mid = (self.env.max_position + self.env.min_position) / 2

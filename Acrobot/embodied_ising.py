@@ -149,7 +149,7 @@ class ising:
 			self.Update(i)
 
 	# Dynamical Critical Learning Algorithm for poising units in a critical state
-	def HomeostaticCorrelations(self, T=None):
+	def AdjustCorrelations(self, T=None):
 		if T is None:
 			T = self.defaultT
 
@@ -200,10 +200,10 @@ class ising:
 		dJ = self.c1 - self.c
 		return dh, dJ
 
-	def CriticalLearning(self, Iterations, T=None, mode='homeostatic'):
+	def CriticalLearning(self, Iterations, T=None):
 		u = 0.01
 		count = 0
-		dh, dJ = self.HomeostaticCorrelations(T)
+		dh, dJ = self.AdjustCorrelations(T)
 		fit = max(np.max(np.abs(self.c1 - self.c)), np.max(np.abs(self.m1 - self.m)))
 		print(count, fit, self.env.LINK_MASS_1, np.max(np.abs(self.J)), np.mean(
 			np.abs(self.J[0:self.Ssize, self.Ssize:])), np.mean(self.y), np.max(self.y))
@@ -223,7 +223,7 @@ class ising:
 					if np.abs(self.J[i, j]) > Vmax:
 						self.J[i, j] = Vmax * np.sign(self.J[i, j])
 
-			dh, dJ = self.HomeostaticCorrelations(T)
+			dh, dJ = self.AdjustCorrelations(T)
 			fit = np.max(
 				np.abs(self.c1[self.Ssize:, self.Ssize:] - self.c[self.Ssize:, self.Ssize:]))
 
