@@ -8,9 +8,9 @@ class ising:
 	# Initialize the network
 	def __init__(self, netsize, Nsensors=1, Nmotors=1):  # Create ising model
 
-		self.size = netsize
-		self.Ssize = Nsensors  # Number of sensors
-		self.Msize = Nmotors  # Number of sensors
+		self.size = netsize		#Network size
+		self.Ssize = Nsensors  	# Number of sensors
+		self.Msize = Nmotors  	# Number of sensors
 
 		self.h = np.zeros(netsize)
 		self.J = np.zeros((netsize, netsize))
@@ -62,9 +62,9 @@ class ising:
 		self.s = np.random.randint(0, 2, self.size) * 2 - 1
 		self.sensors = np.random.randint(0, 2, self.Ssize) * 2 - 1
 
+	# Randomize the position of the agent
 	def randomize_position(self):
 		self.observation = self.env.reset()
-		self.theta1_dot = 0
 
 	# Set random bias to sets of units of the system
 	def random_fields(self, max_weights=None):
@@ -82,20 +82,19 @@ class ising:
 				if (i >= self.Ssize or j >= self.Ssize):
 					self.J[i, j] = (np.random.rand(1) * 2 - 1) * self.max_weights
 
+	# Update the position of the agent
 	def Move(self):
 		action = int(np.digitize(
 			np.sum(self.s[-self.Msize:]) / self.Msize, [-1 / 3, 1 / 3, 1.1]))
 		observation, reward, done, info = self.env.step(action)
-		theta1_dot_p = self.theta1_dot
-		self.theta1_dot = self.env.state[2]
-		self.theta1_dot2 = self.theta1_dot - theta1_dot_p
 
+	# Transorm the sensor input into integer index
 	def SensorIndex(self, x, xmax):
 		return int(np.floor((x * (1 - 10 * np.finfo(float).eps) +
                        xmax) / (2 * xmax) * 2**self.Ssize))
 
+	# Update the state of the sensor
 	def UpdateSensors(self):
-		self.acc = self.theta1_dot2
 		s = self.env.state
 		self.theta = s[0]
 
@@ -106,23 +105,12 @@ class ising:
 		self.xpos = np.sin(s[0]) + np.sin(s[1] + s[0])
 
 		self.speed = self.env.state[2]
-		self.speedx = self.speed * np.cos(s[0])
-		self.speedy = self.speed * np.sin(s[0])
-
-		self.speed2 = self.env.state[3]
-
-		self.posx0_ind = self.SensorIndex(self.xpos, self.maxheight / 2)
-		self.posy0_ind = self.SensorIndex(self.ypos, self.maxheight / 2)
-
-		self.posx_ind = self.SensorIndex(self.xpos, self.maxheight)
-		self.posy_ind = self.SensorIndex(self.ypos, self.maxheight)
-
 		self.speed_ind = self.SensorIndex(self.speed, self.maxspeed)
 
 		self.sensors[0:self.Ssize] = 2 * bitfield(self.speed_ind, self.Ssize) - 1
 
 	# Execute step of the Glauber algorithm to update the state of one unit
-	def GlauberStep(self, i=None):  # Execute step of Glauber algorithm
+	def GlauberStep(self, i=None):
 		if i is None:
 			i = np.random.randint(self.size)
 
@@ -134,7 +122,7 @@ class ising:
 		if eDiff * self.Beta < np.log(1 / np.random.rand() - 1):    # Glauber
 			self.s[i] = -self.s[i]
 
-	# Update states of the agent from its sensors
+	# Update random unit of the agent
 	def Update(self, i=None):
 		if i is None:
 			i = np.random.randint(-1, self.size)
@@ -144,11 +132,12 @@ class ising:
 		else:
 			self.GlauberStep(i)
 
+	# Sequentially update state of all units of the agent in random order
 	def SequentialUpdate(self):
 		for i in np.random.permutation(range(-1, self.size)):
 			self.Update(i)
 
-	# Dynamical Critical Learning Algorithm for poising units in a critical state
+	# Step of the learning algorith to ajust correlations to the critical regime
 	def AdjustCorrelations(self, T=None):
 		if T is None:
 			T = self.defaultT
@@ -200,6 +189,7 @@ class ising:
 		dJ = self.c1 - self.c
 		return dh, dJ
 
+	# Algorithm for poising an agent in a critical regime
 	def CriticalLearning(self, Iterations, T=None):
 		u = 0.01
 		count = 0
@@ -241,8 +231,6 @@ def bool2int(x):
 	return int(y)
 
 # Transform positive integer into bit array
-
-
 def bitfield(n, size):
 	x = [int(x) for x in bin(int(n))[2:]]
 	x = [0] * (size - len(x)) + x
