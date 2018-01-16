@@ -9,3 +9,5 @@ Many biological and cognitive systems do not operate deep within one or other re
 ## Description of the code
 
 The code in the [Network](Network/) folder generates the distribution of correlations used in the article, and trains an isolated network of different sizes to be poised near a critical point.
+
+The code in the [Mountain-Car](Mountain-Car/) and [Acrobot](Acrobot/) includes scripts for training agents in teh Mountain-Car and Acrobot environments. As well, videos of the behaviour of trained agents with $N_h=64$ hidden neurons and $N=70$ total neurons for the [Mountain-Car](Video-MountainCar.avi) and [Acrobot](Acrobot.avi) environments.
