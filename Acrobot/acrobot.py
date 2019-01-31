@@ -94,11 +94,11 @@ class AcrobotEnv(core.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _reset(self):
+    def reset(self):
         self.state = self.np_random.uniform(low=-0.1, high=0.1, size=(4,))
         return self._get_ob()
 
-    def _step(self, a):
+    def step(self, a):
         s = self.state
         torque = self.AVAIL_TORQUE[a]
 
