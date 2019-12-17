@@ -1,6 +1,6 @@
 # Adaptation-to-criticality-through-organizational-invariance
 
-Code reproducing the models used in this article https://arxiv.org/abs/1712.05284
+Code reproducing the models used in this article https://www.nature.com/articles/s41598-018-25925-4
 
 ## Abstract
 
