@@ -1,0 +1,225 @@
+#!/usr/bin/env python
+
+from embodied_ising import ising,bitfield
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
+from scipy import interpolate
+from scipy.optimize import curve_fit
+from scipy.interpolate import pchip_interpolate
+from scipy.interpolate import splev, splrep
+import os
+
+plt.rc('text', usetex=True)
+font = {'size':15}
+plt.rc('font',**font)
+plt.rc('legend',**{'fontsize':14})
+
+
+
+R=10
+
+Iterations=1000
+T=5000
+save=False
+save=True
+
+mode='homeostatic'
+
+Nbetas=101
+betas=10**np.linspace(-1,1,Nbetas)
+
+
+b=0.8
+
+
+mods=['n','s','i']
+modlabels=[r'h',r's',r'{in}']
+
+
+for im,mod in enumerate(mods[0:2]):
+	
+	if mod=='n':
+		sizes=[1,2,4,8,16]
+	else:	
+		sizes=[4,8,16,32,64]
+	S=len(sizes)
+	dashes=[(1,2),(2,2),(4,2),(6,2,2,2),(None,None)]
+	labels=[]
+	for s in sizes:
+		labels+=[r'$N_h='+str(s)+'$']
+	H=np.zeros((S,R,Nbetas))
+	Hu=np.zeros((S,R,Nbetas))
+	dB=0.001
+	betas1 = np.arange(0.1, 10, dB)
+	betas2=0.5*(betas1[0:-1]+betas1[1:])
+	H1=np.zeros((S,R,len(betas1)))
+	C=np.zeros((S,R,len(betas1)-1))
+	C1=np.zeros((S,R,len(betas1)-1))
+	for s,N in enumerate(sizes):
+	
+		for bind in range(Nbetas):
+				
+			Nsensors=4
+			Nmotors=2
+			size=N+Nsensors+Nmotors
+	
+			if mod=='n':
+				sizem=N
+			if mod=='s':
+				sizem=4
+			if mod=='i':
+				sizem=4
+			filename='H/'+mode+'-model-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
+			data=np.load(filename)	
+			H[s,:,bind]=data['H'+mod]
+			Hu[s,:,bind]=H[s,:,bind]/sizem
+
+	fig, ax = plt.subplots(1,1,figsize=(4,3))
+	for s,N in enumerate(sizes):
+		ax.set_xscale("log", nonposx='clip')
+		plt.semilogx(betas,np.mean(Hu[s,:,:],axis=0),'k',dashes=dashes[s],label=labels[s])
+		plt.fill_between(betas,np.percentile(Hu[s,:,:],0,axis=0), np.percentile(Hu[s,:,:],100,axis=0),color=[b,b,b])
+		plt.ylabel(r'$H_'+modlabels[im]+'/N_'+modlabels[im]+'$',fontsize=20, rotation=0, labelpad=35)
+		plt.xlabel(r'$\beta$',fontsize=18)
+		
+	plt.axis([0.5,10**0.8,0,np.max(Hu)*1.05])
+	if save:
+		if mod=='n':
+			plt.savefig('img/fig4b.eps',bbox_inches='tight')
+		if mod=='s':
+			plt.savefig('img/fig5b.eps',bbox_inches='tight')
+	for s,N in enumerate(sizes):
+
+		Nsensors=4
+		Nmotors=2
+		size=N+Nsensors+Nmotors
+		if mod=='n':
+			sizem=N
+		if mod=='s':
+			sizem=4
+		if mod=='i':
+			sizem=2
+		
+		for ind in range(R):
+			smoothness=0.05
+			if mod=='n':
+				smoothness=0.05
+			if mod=='s':
+				smoothness=0.1
+			if mod=='i':
+				smoothness=0.05
+			tck = splrep(np.log(betas), H[s,ind,:],s=smoothness)#,w=1/d[s,:])
+			H1[s,ind,:] = splev(np.log(betas1), tck)/sizem
+			C[s,ind,:] = -np.diff(H1[s,ind,:])/dB*betas2
+	
+	fig, ax = plt.subplots(1,1,figsize=(4,3))
+	for s,N in enumerate(sizes):
+		ax.set_xscale("log", nonposx='clip')
+		plt.semilogx(betas1,np.mean(H1[s,:,:],axis=0),'k')
+		plt.fill_between(betas1,np.percentile(H1[s,:,:],0,axis=0), np.percentile(H1[s,:,:],100,axis=0),color=[b,b,b])
+		plt.ylabel(r'$H'+modlabels[im]+'$',fontsize=20, rotation=0, labelpad=35)
+		plt.xlabel(r'$\beta$',fontsize=18)
+		
+	
+		
+	fig, ax = plt.subplots(1,1,figsize=(4,3))
+	for s,N in reversed(list(enumerate(sizes))):
+		ax.set_xscale("log", nonposx='clip')
+		plt.semilogx(betas2,np.mean(C[s,:,:],axis=0),'k',dashes=dashes[s],label=labels[s])
+		plt.fill_between(betas2,np.percentile(C[s,:,:],0,axis=0), np.percentile(C[s,:,:],100,axis=0),color=[b,b,b])
+		plt.ylabel(r'$C_'+modlabels[im]+'/N_'+modlabels[im]+'$',fontsize=20, rotation=0, labelpad=35)
+		plt.xlabel(r'$\beta$',fontsize=18)
+		ax.set_xticks([0.5,1, 2, 4])
+		ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+		plt.legend(loc='upper right', bbox_to_anchor=(1.05, 1.15), fancybox=True, shadow=True)
+	plt.axis([0.5,10**0.8,0,np.max(C[-1,:,100:-1000])*1.05])
+	if save:
+		if mod=='n':
+			plt.savefig('img/fig4d.eps',bbox_inches='tight')
+		if mod=='s':
+			plt.savefig('img/fig5d.eps',bbox_inches='tight')
+#mods=['y','M']
+mods=['y']
+
+for mod in mods:
+	sizes=[4,8,16,32,64]
+	S=len(sizes)
+	dashes=[(1,2),(2,2),(4,2),(6,2,2,2),(None,None)]
+	labels=[]
+	for s in sizes:
+		labels+=[r'$N_h='+str(s)+'$']
+	H=np.zeros((S,R,Nbetas))
+	Hu=np.zeros((S,R,Nbetas))
+	dB=0.001
+	betas1 = np.arange(0.1, 10, dB)
+	betas2=0.5*(betas1[0:-1]+betas1[1:])
+	H1=np.zeros((S,R,len(betas1)))
+	C=np.zeros((S,R,len(betas1)-1))
+	C1=np.zeros((S,R,len(betas1)-1))
+	for s,N in enumerate(sizes):
+
+		
+		for bind in range(Nbetas):
+				
+			Nsensors=4
+			Nmotors=2
+			size=N+Nsensors+Nmotors
+			filename='H/'+mode+'-model-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
+			data=np.load(filename)	
+			H[s,:,bind]=data[mod]
+			Hu[s,:,bind]=H[s,:,bind]
+
+	
+	fig, ax = plt.subplots(1,1,figsize=(4,3))
+	for s,N in enumerate(sizes):
+		ax.set_xscale("log", nonposx='clip')
+		plt.semilogx(betas,np.mean(Hu[s,:,:],axis=0),'k',dashes=dashes[s],label=labels[s])
+		plt.fill_between(betas,np.percentile(Hu[s,:,:],0,axis=0), np.percentile(Hu[s,:,:],100,axis=0),color=[b,b,b])
+		plt.ylabel(r'$\langle '+mod+r'\rangle$',fontsize=20, rotation=0, labelpad=20)
+		plt.xlabel(r'$\beta$',fontsize=18)
+		plt.axis([0.5,10**0.8,np.min(Hu),np.max(Hu)*1.05])
+	if save:
+		if mod=='y':
+			print('img/fig7b.eps')
+			plt.savefig('img/fig7b.eps',bbox_inches='tight')
+	for s,N in enumerate(sizes):
+
+		Nsensors=4
+		Nmotors=2
+		size=N+Nsensors+Nmotors
+		
+		for ind in range(R):
+			smoothness=0.15
+			tck = splrep(np.log(betas), H[s,ind,:],s=smoothness)#,w=1/d[s,:])
+			H1[s,ind,:] = splev(np.log(betas1), tck)
+			C[s,ind,:] = np.diff(H1[s,ind,:])/dB*betas2
+	
+	fig, ax = plt.subplots(1,1,figsize=(4,3))
+	for s,N in enumerate(sizes):
+		ax.set_xscale("log", nonposx='clip')
+		plt.semilogx(betas1,np.mean(H1[s,:,:],axis=0),'k')
+		plt.fill_between(betas1,np.percentile(H1[s,:,:],0,axis=0), np.percentile(H1[s,:,:],100,axis=0),color=[b,b,b])
+		plt.ylabel(r'$\langle '+mod+r'\rangle$',fontsize=20, rotation=0, labelpad=20)
+		plt.xlabel(r'$\beta$',fontsize=18)
+		
+	
+		
+	fig, ax = plt.subplots(1,1,figsize=(4,3))
+	for s,N in reversed(list(enumerate(sizes))):
+		ax.set_xscale("log", nonposx='clip')
+		plt.semilogx(betas2,np.mean(C[s,:,:],axis=0),'k',dashes=dashes[s],label=labels[s])
+		plt.fill_between(betas2,np.percentile(C[s,:,:],0,axis=0), np.percentile(C[s,:,:],100,axis=0),color=[b,b,b])
+		plt.ylabel(r'$\chi_'+mod+'$',fontsize=20, rotation=0, labelpad=20)
+		plt.xlabel(r'$\beta$',fontsize=18)
+		ax.set_xticks([0.5,1, 2, 4])
+		ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+		plt.legend(loc='lower right', bbox_to_anchor=(1.05, -0.15), fancybox=True, shadow=True)
+	plt.axis([0.5,10**0.8,np.min(C[-1,:,100:-100])*1.05,np.max(C[-1,:,100:-100])*1.02])
+	if save:
+		if mod=='y':
+			plt.savefig('img/fig7d.eps',bbox_inches='tight')
+	
+
+plt.show()
+
