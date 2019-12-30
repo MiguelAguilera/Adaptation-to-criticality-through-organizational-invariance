@@ -29,19 +29,17 @@ Hp=np.zeros(R)
 Iterations=1000
 T=5000
 
-mode='homeostatic'
 
 for ind in range(R):
 	print()
 	print(betas[bind],size,mode)
 	
 	I=ising(size,Nsensors,Nmotors)
-	filename='files/'+mode+'-model-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-ind_'+str(ind)+'.npz'
+	filename='files/network-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-ind_'+str(ind)+'.npz'
 
-	if mode=='homeostatic':
-		data=np.load(filename)
-		I.h=data['h']
-		I.J=data['J']
+	data=np.load(filename)
+	I.h=data['h']
+	I.J=data['J']
 
 	beta=betas[bind]
 	I.Beta=betas[bind]
@@ -78,6 +76,6 @@ for ind in range(R):
 
 	print('Entropy agent',Ha[ind],'Entropy sensor',Hs[ind],'Entropy sensor',Hn[ind])
 	
-filename='H/'+mode+'-model-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
+filename='H/network-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
 np.savez(filename,betas=betas,Nbetas=Nbetas,Ha=Ha,Hn=Hn,Hs=Hs,Hp=Hp)
 

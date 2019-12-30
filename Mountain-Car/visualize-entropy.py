@@ -19,7 +19,6 @@ T=5000
 save=False
 save=True
 
-mode='homeostatic'
 
 Nbetas=101
 betas=10**np.linspace(-1,1,Nbetas)
@@ -68,7 +67,7 @@ for im,mod in enumerate(mods[0:2]):
 				sizem=4
 			if mod=='i':
 				sizem=4
-			filename='H/'+mode+'-model-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
+			filename='H/network-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
 			data=np.load(filename)	
 			H[s,:,bind]=data['H'+mod]
 		Hu[s,:,:]=H[s,:,:]/sizem
@@ -152,7 +151,7 @@ for mod in mods:
 			Nmotors=2
 			size=N+Nsensors+Nmotors
 			sizem=1
-			filename='H/'+mode+'-model-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
+			filename='H/network-size_'+str(size)+'-sensors_'+str(Nsensors)+'-motors_'+str(Nmotors)+'-T_'+str(T)+'-Iterations_'+str(Iterations)+'-bind_'+str(bind)+'.npz'
 			data=np.load(filename)	
 			H[s,:,bind]=data[mod]
 			Hu[s,:,bind]=H[s,:,bind]/sizem
