@@ -28,7 +28,7 @@ beta=1.0
 Iterations=1000
 T=5000
 visualize=True
-visualize=False
+# visualize=False
 
 
 
