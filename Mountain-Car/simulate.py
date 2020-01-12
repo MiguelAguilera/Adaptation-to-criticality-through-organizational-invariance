@@ -24,7 +24,7 @@ beta=1
 Iterations=1000
 T=5000
 visualize=True
-visualize=False
+# visualize=False
 
 
 I=ising(size,Nsensors,Nmotors)
