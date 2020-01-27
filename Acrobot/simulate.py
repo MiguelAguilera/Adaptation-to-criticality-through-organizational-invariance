@@ -3,7 +3,6 @@
 from embodied_ising import ising,bool2int
 import numpy as np
 import matplotlib.pyplot as plt
-from infoflow import MI,Imin,TE,TE1,Entropy,ConditionalEntropy
 import time
 from scipy.interpolate import interp1d
 
@@ -88,7 +87,7 @@ for t in range(T):
 		I.env.render()
 		time.sleep(0.01) 
 	
-print(Entropy(si)/4,Entropy(s)/4, Entropy(h)/N)
+
 plt.figure()
 plt.plot(h)
 plt.figure()
