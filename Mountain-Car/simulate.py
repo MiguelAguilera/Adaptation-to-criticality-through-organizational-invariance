@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-from embodied_ising import ising,bool2int,TSE
+from embodied_ising import ising,bool2int
 import numpy as np
 import matplotlib.pyplot as plt
-from infoflow import MI,Imin,TE,TE1,Entropy,ConditionalEntropy
 from itertools import combinations
 
 plt.rc('text', usetex=True)
@@ -86,8 +85,6 @@ plt.title('hidden units')
 plt.figure()
 plt.plot(s)
 plt.title('inputs')
-print(Entropy(h))
-print(Entropy(s))
 
 
 
