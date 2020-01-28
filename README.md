@@ -10,4 +10,9 @@ Many biological and cognitive systems do not operate deep within one or other re
 
 The code in the [Network](Network/) folder generates the distribution of correlations used in the article, and trains an isolated network of different sizes to be poised near a critical point.
 
-The code in the [Mountain-Car](Mountain-Car/) and [Acrobot](Acrobot/) includes scripts for training agents in teh Mountain-Car and Acrobot environments. As well, videos of the behaviour of trained agents with N_h=64 hidden neurons and N=70 total neurons for the [Mountain-Car](https://github.com/MiguelAguilera/Adaptation-to-criticality-through-organizational-invariance/raw/master/Video-MountainCar.avi) and [Acrobot](https://github.com/MiguelAguilera/Adaptation-to-criticality-through-organizational-invariance/raw/master/Video-Acrobot.avi) environments.
+The code in the [Mountain-Car](Mountain-Car/) and [Acrobot](Acrobot/) includes scripts for training agents in teh Mountain-Car and Acrobot environments, as well as for visualizing their behaviour and reproduce results in the paper related with the entrpy and heat capacity of the system. As well, videos of the behaviour of trained agents with N_h=64 hidden neurons and N=70 total neurons for the [Mountain-Car](https://github.com/MiguelAguilera/Adaptation-to-criticality-through-organizational-invariance/raw/master/Video-MountainCar.avi) and [Acrobot](https://github.com/MiguelAguilera/Adaptation-to-criticality-through-organizational-invariance/raw/master/Video-Acrobot.avi) environments.
+
+* 'train.py' generates agents trained according to the adaptation to criticality algorithm
+* 'simulate.py' picks one agent generated from 'train.py' and simulates and visualizes its behaviour
+* 'compute-entropy.py' picks one agent generated from 'train.py' and simulates its behaviour to compute values of entropy
+* 'visualize-entropy.py' visualizes the results from 'compute-entropy.py' 
