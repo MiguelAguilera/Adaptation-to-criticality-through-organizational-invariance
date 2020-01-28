@@ -53,7 +53,6 @@ h=np.zeros(T)
 a=np.zeros(T)
 n=np.zeros(T,int)
 spins=np.zeros((size,T))
-acc=np.zeros(T)
 spd=np.zeros(T)
 pos=np.zeros(T)
 height=np.zeros(T)
@@ -70,7 +69,6 @@ for t in range(T):
 #	a[t]=I.get_state_index('non-sensors')
 	h[t]=I.get_state_index('hidden')
 #	m[t]=I.get_state_index('motors')
-	acc[t]=I.acceleration
 	spd[t]=I.speed
 	pos[t]=I.env.state[0]
 	height[t]=I.height
