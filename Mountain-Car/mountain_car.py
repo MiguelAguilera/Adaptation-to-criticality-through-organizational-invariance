@@ -63,7 +63,7 @@ class MountainCarEnv(gym.Env):
 	def _height(self, xs):
 		return np.sin(3 * xs) * .45 + .55
 
-	def _render(self, mode='human', close=False):
+	def render(self, mode='human', close=False):
 		if close:
 			if self.viewer is not None:
 				self.viewer.close()
