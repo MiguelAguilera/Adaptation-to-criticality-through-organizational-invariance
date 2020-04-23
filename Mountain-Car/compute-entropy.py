@@ -31,6 +31,7 @@ T=5000
 
 
 for ind in range(R):
+    for bind in range(Nbetas):
 	print()
 	print(betas[bind],size)
 	
