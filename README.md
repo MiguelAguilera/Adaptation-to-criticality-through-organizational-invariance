@@ -1,7 +1,7 @@
 # Adaptation-to-criticality-through-organizational-invariance
 
 Code reproducing the models used in this article
-Aguilera, M & Bedia, MG (2018). [Adaptation to criticality through organizational invariance in embodied agents].(https://www.nature.com/articles/s41598-018-25925-4). _Scientific Reports_ volume 8, Article number: 7723 (2018). doi:10.1038/s41598-018-25925-4
+Aguilera, M & Bedia, MG (2018). [Adaptation to criticality through organizational invariance in embodied agents](https://www.nature.com/articles/s41598-018-25925-4). _Scientific Reports_ volume 8, Article number: 7723 (2018). doi:10.1038/s41598-018-25925-4
 
 ## Abstract
 
