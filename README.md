@@ -1,3 +1,5 @@
+[![demo](https://img.shields.io/badge/doi:-10.5281/zenodo.4252069-brightgreen.svg)](https://doi.org/10.5281/zenodo.4252069)
+
 # Adaptation-to-criticality-through-organizational-invariance
 
 Code reproducing the models used in this article
